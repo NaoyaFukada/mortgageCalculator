@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mortgage Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg rounded-lg p-6 max-w-md w-full">
+      <h1 class="text-2xl font-bold text-gray-800 text-center">
+        Mortgage Calculator
+      </h1>
+      <form id="mortgage-form" class="mt-6 space-y-4">
+        <div>
+          <label for="principal" class="block text-sm font-medium text-gray-700"
+            >Loan Amount ($):</label
+          >
+          <input
+            type="number"
+            id="principal"
+            name="principal"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label
+            for="annual-rate"
+            class="block text-sm font-medium text-gray-700"
+            >Annual Interest Rate (%):</label
+          >
+          <input
+            type="number"
+            id="annual-rate"
+            name="annual-rate"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label for="years" class="block text-sm font-medium text-gray-700"
+            >Loan Term (Years):</label
+          >
+          <input
+            type="number"
+            id="years"
+            name="years"
+            required
+            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Calculate
+        </button>
+      </form>
+
+      <div id="results" class="mt-6 hidden">
+        <h2 class="text-xl font-semibold text-gray-800">Results:</h2>
+        <p id="monthly-payment" class="text-gray-700 mt-2"></p>
+        <p id="total-payment" class="text-gray-700 mt-1"></p>
+        <p id="total-interest" class="text-gray-700 mt-1"></p>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("mortgage-form");
+      const resultsDiv = document.getElementById("results");
+      const monthlyPaymentEl = document.getElementById("monthly-payment");
+      const totalPaymentEl = document.getElementById("total-payment");
+      const totalInterestEl = document.getElementById("total-interest");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const principal = parseFloat(
+          document.getElementById("principal").value
+        );
+        const annualRate = parseFloat(
+          document.getElementById("annual-rate").value
+        );
+        const years = parseInt(document.getElementById("years").value);
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000/calculate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ principal, annual_rate: annualRate, years }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch results. Please try again later.");
+          }
+
+          const data = await response.json();
+
+          // Display results
+          resultsDiv.classList.remove("hidden");
+          monthlyPaymentEl.textContent = `Monthly Payment: $${data.monthly_payment}`;
+          totalPaymentEl.textContent = `Total Payment: $${data.total_payment}`;
+          totalInterestEl.textContent = `Total Interest: $${data.total_interest}`;
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+    </script>
+  </body>
+</html>
